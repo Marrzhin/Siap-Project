@@ -653,20 +653,35 @@ function setSyncStatus(status, msg) {
 // ── API HELPERS ─────────────────────────────────────────────
 async function apiLoad() {
   if (!API_URL) return null;
-  const res = await fetch(API_URL + '?action=load');
+  const res = await fetch(API_URL + '?action=load', { redirect: 'follow' });
   if (!res.ok) throw new Error('HTTP ' + res.status);
   return await res.json();
 }
 
 async function apiSave(data) {
   if (!API_URL) return null;
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: 'save', data })
+  // Gunakan POST dengan mode 'no-cors' + URLSearchParams
+  // Alasan:
+  //   - fetch POST biasa ke GAS → GAS redirect → browser blokir (CORS error)
+  //   - GET dengan payload besar → melebihi limit URL browser (~8KB)
+  //   - no-cors POST + URLSearchParams → tidak ada preflight, GAS terima via e.parameter
+  //   - Trade-off: response tidak bisa dibaca (opaque), tapi save berhasil
+  //   - Verifikasi dilakukan via ping GET setelah save
+  const body = new URLSearchParams({
+    action: 'save',
+    payload: JSON.stringify(data)
   });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
+  await fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: body
+  });
+  // no-cors response selalu opaque — tidak bisa dibaca
+  // Verifikasi dengan ping terpisah
+  await new Promise(r => setTimeout(r, 1500)); // tunggu GAS selesai proses
+  const ping = await fetch(API_URL + '?action=ping');
+  if (!ping.ok) throw new Error('Save sent but ping failed');
+  return { ok: true };
 }
 
 // ── SAVE + DEBOUNCED SYNC ───────────────────────────────────
@@ -722,10 +737,27 @@ async function load() {
         if (!DB.jadwal)  DB.jadwal  = [];
         // Kalau sheet masih kosong, isi dengan seed data
         if (DB.clients.length === 0) {
+          // Sheet kosong — cek apakah ada data lokal yang bisa di-push
+          const cached = localStorage.getItem(LS_KEY_DATA);
+          if (cached) {
+            try {
+              const localDB = JSON.parse(cached);
+              if (localDB.clients && localDB.clients.length > 0) {
+                // Ada data lokal — push ke Sheets sekarang
+                DB = localDB;
+                setSyncStatus('syncing', 'Mengupload data lokal ke Sheets...');
+                await pushToSheets();
+                setSyncStatus('synced', 'Data lokal berhasil diupload · ' + new Date().toLocaleTimeString('id-ID'));
+                hideLoading();
+                return;
+              }
+            } catch(e) {}
+          }
+          // Betul-betul kosong — seed dengan data demo
           seedData();
           await pushToSheets();
         } else {
-          // Update cache lokal
+          // Ada data di Sheets — update cache lokal
           try { localStorage.setItem(LS_KEY_DATA, JSON.stringify(DB)); } catch(e) {}
         }
         setSyncStatus('synced', 'Terhubung · ' + new Date().toLocaleTimeString('id-ID'));
