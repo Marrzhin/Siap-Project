@@ -203,6 +203,61 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
 .notif.success{background:var(--green-bg);color:var(--green);border:1px solid #c8e6c9}
 .notif.error{background:var(--red-bg);color:var(--red);border:1px solid #ffcdd2}
 
+
+/* INVOICE STYLES */
+.inv-preview{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.inv-header{background:var(--navy);color:#fff;padding:24px 32px;display:flex;justify-content:space-between;align-items:flex-start}
+.inv-logo-text{font-size:20px;font-weight:700;letter-spacing:.3px}
+.inv-tagline{font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px}
+.inv-number{text-align:right}
+.inv-number .num{font-size:15px;font-weight:700;color:var(--gold)}
+.inv-number .date{font-size:12px;color:rgba(255,255,255,0.6);margin-top:4px}
+.inv-body{padding:24px 32px}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.inv-party-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.inv-party-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.inv-party-detail{font-size:12px;color:var(--muted);line-height:1.6}
+.inv-items table{width:100%;border-collapse:collapse;font-size:13px}
+.inv-items th{text-align:left;padding:8px 10px;background:var(--grey);font-size:11px;font-weight:600;color:var(--muted)}
+.inv-items th:last-child,.inv-items td:last-child{text-align:right}
+.inv-items td{padding:10px 10px;border-bottom:1px solid var(--border)}
+.inv-totals{margin-top:16px;display:flex;justify-content:flex-end}
+.inv-totals-box{width:280px}
+.inv-total-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;border-bottom:1px solid var(--border)}
+.inv-total-row.grand{font-weight:700;font-size:15px;border-bottom:none;padding-top:10px;color:var(--navy)}
+.inv-footer{background:var(--grey);padding:14px 32px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+.inv-ttd{text-align:right}
+.inv-ttd .ttd-space{height:48px;border-bottom:1px solid var(--text);width:160px;margin-left:auto;margin-bottom:4px}
+.inv-ttd .ttd-name{font-size:12px;font-weight:600;color:var(--text)}
+.inv-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .15s;display:flex;align-items:center;gap:12px}
+.inv-card:hover{border-color:var(--navy)}
+.inv-card-icon{width:40px;height:40px;background:var(--gold-light);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.inv-list{display:grid;gap:10px}
+
+/* REPORT STYLES */
+.report-header{background:var(--navy);color:#fff;padding:24px 32px;border-radius:12px 12px 0 0}
+.report-body{background:#fff;border:1px solid var(--border);border-top:none;border-radius:0 0 12px 12px;padding:24px 32px}
+.report-section{margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.report-section:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.report-section-title{font-size:13px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;padding-left:10px;border-left:3px solid var(--gold)}
+.skor-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.skor-bar-label{font-size:12px;min-width:120px;color:var(--text)}
+.skor-bar-track{flex:1;height:8px;background:var(--grey);border-radius:4px;overflow:hidden}
+.skor-bar-fill{height:100%;border-radius:4px;background:var(--navy);transition:width .4s}
+.skor-bar-val{font-size:12px;font-weight:600;color:var(--navy);min-width:30px;text-align:right}
+.rep-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.rep-stat{text-align:center;padding:12px;background:var(--grey);border-radius:8px}
+.rep-stat-val{font-size:22px;font-weight:700;color:var(--navy)}
+.rep-stat-lbl{font-size:11px;color:var(--muted);margin-top:3px}
+
+@media print{
+  .sidebar,.topbar,.sync-bar,.content>.notif,.config-banner,.btn:not(.no-print),.modal-overlay{display:none!important}
+  .main{overflow:visible}
+  .content{padding:0}
+  .inv-preview,.report-header,.report-body{box-shadow:none;border:none}
+  body{background:#fff}
+}
+
 @media(max-width:640px){
   .sidebar{width:0;overflow:hidden}
   .dh-kpi{grid-template-columns:repeat(3,1fr)}
@@ -244,9 +299,18 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
       Pembayaran
     </div>
+    <div class="nav-section">Dokumen</div>
+    <div class="nav-item" onclick="showPage('invoice')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Invoice
+    </div>
+    <div class="nav-item" onclick="showPage('report')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Report
+    </div>
   </nav>
   <div class="sb-footer">
-    <div class="version">v4.0 · Google Sheets Sync</div>
+    <div class="version">v5.0 · Invoice & Report</div>
   </div>
 </aside>
 
@@ -343,7 +407,11 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
         <div class="dh-name" id="det-name"></div>
         <div class="dh-meta" id="det-meta"></div>
       </div>
-      <div style="margin-left:auto;display:flex;gap:8px">
+      <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="showPage('report',currentClient)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          Report
+        </button>
         <button class="btn btn-sm" onclick="editKlien(currentClient)">Edit Profil</button>
         <button class="btn btn-sm btn-danger" onclick="deleteKlien(currentClient)">Hapus</button>
       </div>
@@ -412,6 +480,87 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
     </table>
   </div>
 </div>
+
+<!-- ═══════════════ INVOICE ═══════════════ -->
+<div id="page-invoice" class="page">
+  <div class="toolbar">
+    <div style="flex:1">
+      <select id="inv-klien-select" onchange="onInvKlienChange()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;min-width:200px">
+        <option value="">-- Pilih Klien --</option>
+      </select>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="generateInvoice()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Buat Invoice
+    </button>
+    <button class="btn btn-sm" onclick="printInvoice()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Cetak
+    </button>
+  </div>
+
+  <!-- Invoice form options -->
+  <div class="card" id="inv-options" style="display:none;margin-bottom:16px">
+    <div class="card-title">Pengaturan Invoice</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nomor Invoice</label>
+        <input type="text" id="inv-nomor" placeholder="INV/SIAP/2026/001">
+      </div>
+      <div class="form-group">
+        <label>Tanggal Invoice</label>
+        <input type="date" id="inv-tanggal">
+      </div>
+      <div class="form-group">
+        <label>Jatuh Tempo</label>
+        <input type="date" id="inv-jatuh-tempo">
+      </div>
+      <div class="form-group">
+        <label>Tagihan Bulan ke-</label>
+        <select id="inv-bulan-tagihan"></select>
+      </div>
+      <div class="form-group">
+        <label>Harga per Bulan (Rp)</label>
+        <input type="number" id="inv-harga" value="2000000">
+      </div>
+      <div class="form-group">
+        <label>Status Tagihan</label>
+        <select id="inv-status-tagihan">
+          <option value="TAGIHAN">Tagihan Baru</option>
+          <option value="LUNAS">Sudah Lunas (Kwitansi)</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Catatan / Pesan ke Klien</label>
+        <textarea id="inv-catatan" placeholder="Contoh: Mohon transfer ke rekening BCA 1234567890 a/n SIAP Education" rows="2"></textarea>
+      </div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="cancelInvoice()">Batal</button>
+      <button class="btn btn-primary" onclick="previewInvoice()">Preview Invoice</button>
+    </div>
+  </div>
+
+  <!-- Invoice preview area -->
+  <div id="inv-preview-area"></div>
+</div>
+
+<!-- ═══════════════ REPORT ═══════════════ -->
+<div id="page-report" class="page">
+  <div class="toolbar">
+    <div style="flex:1">
+      <select id="rep-klien-select" onchange="generateReport()" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;min-width:200px">
+        <option value="">-- Pilih Klien --</option>
+      </select>
+    </div>
+    <button class="btn btn-sm" onclick="printReport()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+      Cetak / PDF
+    </button>
+  </div>
+  <div id="rep-area"></div>
+</div>
+
 
 </div>
 </div>
@@ -1543,11 +1692,475 @@ function deleteKlien(id){
   save(); showPage('clients'); showNotif('Klien dihapus');
 }
 
+// ════════════════════════════════════════════════════════════
+// INVOICE & REPORT ENGINE
+// ════════════════════════════════════════════════════════════
+
+// ── Populate dropdowns when page loads ──────────────────────
+function populateDocDropdowns() {
+  const sel1 = document.getElementById('inv-klien-select');
+  const sel2 = document.getElementById('rep-klien-select');
+  const opts = DB.clients.map(c => `<option value="${c.id}">${c.nama}</option>`).join('');
+  sel1.innerHTML = '<option value="">-- Pilih Klien --</option>' + opts;
+  sel2.innerHTML = '<option value="">-- Pilih Klien --</option>' + opts;
+}
+
+// ── PAGE: showPage extension ─────────────────────────────────
+const _origShowPage = showPage;
+function showPage(name, klienId) {
+  // Handle new pages manually before calling original
+  if (name === 'invoice' || name === 'report') {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    const navItems = document.querySelectorAll('.nav-item');
+    // Invoice is index 4, Report is index 5
+    if (name === 'invoice') navItems[4]?.classList.add('active');
+    if (name === 'report')  navItems[5]?.classList.add('active');
+    const titles = {
+      invoice: ['Invoice', 'Buat dan cetak invoice tagihan klien'],
+      report:  ['Report Mentoring', 'Laporan progress dan evaluasi per klien'],
+    };
+    document.getElementById('page-title').textContent = titles[name][0];
+    document.getElementById('page-sub').textContent   = titles[name][1];
+    populateDocDropdowns();
+    if (name === 'invoice') {
+      document.getElementById('inv-options').style.display = 'none';
+      document.getElementById('inv-preview-area').innerHTML = '';
+    }
+    if (name === 'report' && klienId) {
+      document.getElementById('rep-klien-select').value = klienId;
+      generateReport();
+    }
+    return;
+  }
+  _origShowPage(name, klienId);
+}
+
+// ── INVOICE ──────────────────────────────────────────────────
+let invClientId = null;
+
+function onInvKlienChange() {
+  invClientId = document.getElementById('inv-klien-select').value;
+  document.getElementById('inv-options').style.display = invClientId ? 'block' : 'none';
+  document.getElementById('inv-preview-area').innerHTML = '';
+  if (!invClientId) return;
+  const c = getClient(invClientId);
+  if (!c) return;
+  // Auto-fill reasonable defaults
+  const nowDate = today();
+  const dueDate = new Date(); dueDate.setDate(dueDate.getDate() + 14);
+  document.getElementById('inv-tanggal').value = nowDate;
+  document.getElementById('inv-jatuh-tempo').value = dueDate.toISOString().split('T')[0];
+  // Invoice number: INV/SIAP/YYYYMM/XXX
+  const ym = new Date().toISOString().slice(0,7).replace('-','');
+  const seq = String((DB.clients.indexOf(c) + 1) * 100 + (c.bulan || 1)).padStart(3, '0');
+  document.getElementById('inv-nomor').value = `INV/SIAP/${ym}/${seq}`;
+  // Bulan tagihan options
+  const sel = document.getElementById('inv-bulan-tagihan');
+  sel.innerHTML = Array.from({length: c.durasi || 6}, (_, i) =>
+    `<option value="${i+1}" ${i+1 === c.bulan ? 'selected' : ''}>Bulan ${i+1}</option>`
+  ).join('');
+  document.getElementById('inv-catatan').value = 'Mohon transfer ke rekening yang tertera. Terima kasih atas kepercayaan Anda kepada SIAP Education.';
+}
+
+function generateInvoice() {
+  const sel = document.getElementById('inv-klien-select');
+  if (!sel.value) { alert('Pilih klien terlebih dahulu'); return; }
+  invClientId = sel.value;
+  onInvKlienChange();
+}
+
+function cancelInvoice() {
+  document.getElementById('inv-options').style.display = 'none';
+  document.getElementById('inv-preview-area').innerHTML = '';
+  document.getElementById('inv-klien-select').value = '';
+  invClientId = null;
+}
+
+function previewInvoice() {
+  const c = getClient(invClientId); if (!c) return;
+  const nomor   = document.getElementById('inv-nomor').value;
+  const tgl     = document.getElementById('inv-tanggal').value;
+  const jatuh   = document.getElementById('inv-jatuh-tempo').value;
+  const bulanKe = Number(document.getElementById('inv-bulan-tagihan').value);
+  const harga   = Number(document.getElementById('inv-harga').value) || 2000000;
+  const status  = document.getElementById('inv-status-tagihan').value;
+  const catatan = document.getElementById('inv-catatan').value;
+
+  const subtotal = harga;
+  const isLunas = status === 'LUNAS';
+
+  const html = `
+    <div class="inv-preview" id="inv-print-area">
+      <div class="inv-header">
+        <div>
+          <div class="inv-logo-text">SIAP Education</div>
+          <div class="inv-tagline">Program Pendampingan & Mentoring UMKM</div>
+          <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.55);line-height:1.7">
+            Sengkang, Sulawesi Selatan<br>
+            siapeducation@gmail.com
+          </div>
+        </div>
+        <div class="inv-number">
+          <div style="font-size:11px;color:rgba(255,255,255,0.55);margin-bottom:4px">
+            ${isLunas ? 'KWITANSI' : 'INVOICE'}
+          </div>
+          <div class="num">${nomor}</div>
+          <div class="date">Tanggal: ${fmtDate(tgl)}</div>
+          ${!isLunas ? `<div class="date">Jatuh Tempo: ${fmtDate(jatuh)}</div>` : ''}
+          <div style="margin-top:10px">
+            <span style="background:${isLunas ? '#2E7D32' : '#C9A961'};color:#fff;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700">
+              ${isLunas ? '✓ LUNAS' : 'TAGIHAN'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="inv-body">
+        <div class="inv-parties">
+          <div>
+            <div class="inv-party-label">Dari</div>
+            <div class="inv-party-name">SIAP Education</div>
+            <div class="inv-party-detail">
+              Program Pendampingan UMKM<br>
+              PIC: ${c.pic}<br>
+              Sengkang, Sulawesi Selatan
+            </div>
+          </div>
+          <div>
+            <div class="inv-party-label">Kepada</div>
+            <div class="inv-party-name">${c.nama}</div>
+            <div class="inv-party-detail">
+              ${c.pemilik ? 'Up. ' + c.pemilik + '<br>' : ''}
+              ${c.jenis}<br>
+              ${c.lokasi || '-'}
+            </div>
+          </div>
+        </div>
+
+        <div class="inv-items">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:32px">#</th>
+                <th>Deskripsi Layanan</th>
+                <th style="width:100px">Periode</th>
+                <th style="width:80px">Qty</th>
+                <th style="width:140px">Harga</th>
+                <th style="width:140px">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="color:var(--muted)">1</td>
+                <td>
+                  <div style="font-weight:500">Program Mentoring Bisnis SIAP Education</div>
+                  <div style="font-size:11px;color:var(--muted);margin-top:2px">
+                    Bulan ke-${bulanKe} dari ${c.durasi} bulan program · ${c.jenis}
+                  </div>
+                </td>
+                <td style="font-size:12px">Bln ${bulanKe}/${c.durasi}</td>
+                <td style="text-align:right">1</td>
+                <td style="text-align:right">${fmtRp(harga)}</td>
+                <td style="text-align:right;font-weight:500">${fmtRp(subtotal)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="inv-totals">
+          <div class="inv-totals-box">
+            <div class="inv-total-row">
+              <span>Subtotal</span>
+              <span>${fmtRp(subtotal)}</span>
+            </div>
+            <div class="inv-total-row">
+              <span>Diskon</span>
+              <span>Rp 0</span>
+            </div>
+            <div class="inv-total-row grand">
+              <span>${isLunas ? 'Total Diterima' : 'Total Tagihan'}</span>
+              <span>${fmtRp(subtotal)}</span>
+            </div>
+          </div>
+        </div>
+
+        ${catatan ? `
+        <div style="margin-top:20px;padding:12px 16px;background:var(--grey);border-radius:8px;border-left:3px solid var(--gold)">
+          <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">CATATAN</div>
+          <div style="font-size:13px">${catatan}</div>
+        </div>` : ''}
+      </div>
+
+      <div class="inv-footer">
+        <div>
+          <div style="font-weight:600;color:var(--text);margin-bottom:2px">SIAP Education</div>
+          <div>Dibuat oleh: ${c.pic} · ${fmtDate(tgl)}</div>
+        </div>
+        <div class="inv-ttd">
+          <div class="ttd-space"></div>
+          <div class="ttd-name">${c.pic}</div>
+          <div style="font-size:11px;color:var(--muted)">PIC SIAP Education</div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button class="btn btn-sm" onclick="printInvoice()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Cetak / Simpan PDF
+      </button>
+    </div>
+  `;
+  document.getElementById('inv-preview-area').innerHTML = html;
+  document.getElementById('inv-options').style.display = 'none';
+  document.getElementById('inv-preview-area').scrollIntoView({behavior:'smooth'});
+}
+
+function printInvoice() {
+  window.print();
+}
+
+// ── REPORT ───────────────────────────────────────────────────
+function generateReport() {
+  const sel = document.getElementById('rep-klien-select');
+  const id = sel.value;
+  const area = document.getElementById('rep-area');
+  if (!id) { area.innerHTML = '<div class="empty"><p>Pilih klien untuk melihat laporan.</p></div>'; return; }
+  const c = getClient(id);
+  if (!c) return;
+
+  const p   = taskProgress(c);
+  const col = getColor(DB.clients.indexOf(c));
+  const pays = c.payments || [];
+  const totalMasuk = totalPaid(c);
+  const sesiDone  = DB.jadwal.filter(j => j.klienId === id && j.status === 'DONE').length;
+  const sesiTotal = DB.jadwal.filter(j => j.klienId === id).length;
+  const evals = c.evaluasi || [];
+  const avgSkor = evals.length ? (evals.reduce((s,e) => s + Number(e.skor), 0) / evals.length).toFixed(1) : '-';
+
+  // Group tasks by bulan
+  const byBulan = {};
+  (c.tasks || []).forEach(t => { (byBulan[t.bulan] = byBulan[t.bulan] || []).push(t); });
+
+  // Sesi per type
+  const sesiByType = {};
+  DB.jadwal.filter(j => j.klienId === id).forEach(j => {
+    sesiByType[j.jenis] = (sesiByType[j.jenis] || 0) + 1;
+  });
+
+  const nowStr = new Date().toLocaleDateString('id-ID', {day:'numeric',month:'long',year:'numeric'});
+
+  area.innerHTML = `
+    <div id="rep-print-area">
+    <!-- Report Header -->
+    <div class="report-header">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Laporan Progress Mentoring</div>
+          <div style="font-size:22px;font-weight:700">${c.nama}</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.65);margin-top:4px">
+            ${c.jenis} · ${c.lokasi || '-'} · PIC: ${c.pic}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:rgba(255,255,255,0.5)">Dicetak</div>
+          <div style="font-size:13px;color:#fff;margin-top:2px">${nowStr}</div>
+          <div style="margin-top:8px">
+            <span style="background:rgba(201,169,97,0.25);color:var(--gold);padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600">
+              Bulan ${c.bulan} / ${c.durasi}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="report-body">
+
+      <!-- KPI Summary -->
+      <div class="report-section">
+        <div class="report-section-title">Ringkasan Performa</div>
+        <div class="rep-stat-grid">
+          <div class="rep-stat">
+            <div class="rep-stat-val" style="color:var(--navy)">${p.pct}%</div>
+            <div class="rep-stat-lbl">Progress Task</div>
+          </div>
+          <div class="rep-stat">
+            <div class="rep-stat-val" style="color:var(--green)">${p.done}</div>
+            <div class="rep-stat-lbl">Task Selesai</div>
+          </div>
+          <div class="rep-stat">
+            <div class="rep-stat-val" style="color:var(--orange)">${p.total - p.done}</div>
+            <div class="rep-stat-lbl">Task Pending</div>
+          </div>
+          <div class="rep-stat">
+            <div class="rep-stat-val" style="color:var(--blue)">${sesiDone}/${sesiTotal}</div>
+            <div class="rep-stat-lbl">Sesi Selesai</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Overall Progress</div>
+            <div style="height:10px;background:var(--grey);border-radius:5px;overflow:hidden">
+              <div style="height:100%;width:${p.pct}%;background:${p.pct>=80?'var(--green)':p.pct>=40?'var(--navy)':'var(--orange)'};border-radius:5px;transition:width .4s"></div>
+            </div>
+            <div style="font-size:12px;color:var(--muted);margin-top:4px">${p.done} dari ${p.total} task selesai</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Total Pembayaran Masuk</div>
+            <div style="font-size:20px;font-weight:700;color:var(--green)">${fmtRp(totalMasuk)}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">${pays.length} transaksi · Rata skor evaluasi: ${avgSkor}/10</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Task per Bulan -->
+      <div class="report-section">
+        <div class="report-section-title">Progress Task & Materi per Bulan</div>
+        ${Object.keys(byBulan).length === 0
+          ? '<div class="empty"><p>Belum ada task tercatat.</p></div>'
+          : Object.entries(byBulan).map(([bln, tasks]) => {
+              const done = tasks.filter(t => t.status === 'Selesai').length;
+              const pct  = Math.round(done / tasks.length * 100);
+              const barColor = pct === 100 ? 'var(--green)' : pct > 50 ? 'var(--navy)' : 'var(--orange)';
+              return `
+                <div style="margin-bottom:16px">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                    <span style="background:var(--navy);color:#fff;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:600">${bln}</span>
+                    <div style="flex:1;height:6px;background:var(--grey);border-radius:3px;overflow:hidden">
+                      <div style="height:100%;width:${pct}%;background:${barColor};border-radius:3px"></div>
+                    </div>
+                    <span style="font-size:12px;font-weight:600;color:${barColor};min-width:60px">${done}/${tasks.length} (${pct}%)</span>
+                  </div>
+                  <table class="tbl" style="font-size:12px">
+                    <thead><tr><th>#</th><th>Task / Materi</th><th style="width:90px">Status</th><th>Output / Capaian</th></tr></thead>
+                    <tbody>
+                      ${tasks.map((t, i) => `
+                        <tr>
+                          <td style="color:var(--muted)">${i+1}</td>
+                          <td style="font-weight:500">${t.nama}${t.catatan ? `<br><span style="font-size:11px;color:var(--muted);font-weight:400">${t.catatan}</span>` : ''}</td>
+                          <td><span class="badge ${statusCls(t.status)}">${statusLabel(t.status)}</span></td>
+                          <td style="color:var(--muted)">${t.output || '-'}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                  </table>
+                </div>`;
+            }).join('')
+        }
+      </div>
+
+      <!-- Sesi / Pertemuan -->
+      <div class="report-section">
+        <div class="report-section-title">Riwayat Sesi Pertemuan</div>
+        ${sesiTotal === 0
+          ? '<div class="empty"><p>Belum ada sesi tercatat.</p></div>'
+          : `
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+              ${Object.entries(sesiByType).map(([type, n]) =>
+                `<span class="badge badge-navy" style="font-size:12px">${type}: ${n}</span>`
+              ).join('')}
+            </div>
+            <table class="tbl" style="font-size:12px">
+              <thead><tr><th>Tanggal</th><th>Jenis</th><th>Agenda</th><th>Catatan</th><th>Status</th></tr></thead>
+              <tbody>
+                ${DB.jadwal.filter(j => j.klienId === id)
+                  .sort((a,b) => a.tanggal.localeCompare(b.tanggal))
+                  .map(j => `
+                    <tr>
+                      <td style="white-space:nowrap">${fmtDate(j.tanggal)}<br><span style="color:var(--muted)">${j.waktu||''}</span></td>
+                      <td>${j.jenis}</td>
+                      <td style="font-weight:500">${j.agenda || '-'}</td>
+                      <td style="color:var(--muted)">${j.catatan || '-'}</td>
+                      <td><span class="badge ${statusCls(j.status)}">${statusLabel(j.status)}</span></td>
+                    </tr>`).join('')}
+              </tbody>
+            </table>`
+        }
+      </div>
+
+      <!-- Evaluasi Bulanan -->
+      <div class="report-section">
+        <div class="report-section-title">Evaluasi Bulanan</div>
+        ${evals.length === 0
+          ? '<div class="empty"><p>Belum ada evaluasi tercatat.</p></div>'
+          : evals.map(e => `
+              <div class="card" style="margin-bottom:12px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <span class="badge badge-navy">${e.bulan}</span>
+                  <div class="skor-bar-wrap" style="flex:1;margin:0">
+                    <div class="skor-bar-track" style="flex:1">
+                      <div class="skor-bar-fill" style="width:${e.skor*10}%;background:${e.skor>=8?'var(--green)':e.skor>=6?'var(--navy)':'var(--orange)'}"></div>
+                    </div>
+                  </div>
+                  <span style="font-size:20px;font-weight:700;color:${e.skor>=8?'var(--green)':e.skor>=6?'var(--navy)':'var(--orange)'}">${e.skor}/10</span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:12px">
+                  <div><div style="font-weight:600;color:var(--green);margin-bottom:4px">✓ Capaian</div><div style="color:var(--text)">${e.capaian || '-'}</div></div>
+                  <div><div style="font-weight:600;color:var(--orange);margin-bottom:4px">⚠ Kendala</div><div style="color:var(--text)">${e.kendala || '-'}</div></div>
+                  <div><div style="font-weight:600;color:var(--blue);margin-bottom:4px">→ Rekomendasi</div><div style="color:var(--text)">${e.rekomen || '-'}</div></div>
+                </div>
+              </div>`).join('')
+        }
+      </div>
+
+      <!-- Pembayaran -->
+      <div class="report-section">
+        <div class="report-section-title">Riwayat Pembayaran</div>
+        ${pays.length === 0
+          ? '<div class="empty"><p>Belum ada pembayaran tercatat.</p></div>'
+          : `<table class="tbl" style="font-size:12px">
+              <thead><tr><th>Bulan ke-</th><th>Tanggal</th><th>Jumlah</th><th>Status</th><th>Keterangan</th></tr></thead>
+              <tbody>
+                ${pays.map(p => `
+                  <tr>
+                    <td>Bulan ${p.bulan}</td>
+                    <td>${fmtDate(p.tanggal)}</td>
+                    <td style="font-weight:500">${fmtRp(p.jumlah||0)}</td>
+                    <td><span class="badge ${p.status==='LUNAS'?'badge-green':p.status==='DP'?'badge-orange':'badge-red'}">${p.status}</span></td>
+                    <td style="color:var(--muted)">${p.ket||'-'}</td>
+                  </tr>`).join('')}
+                <tr style="background:var(--grey)">
+                  <td colspan="2" style="font-weight:600">Total Masuk</td>
+                  <td style="font-weight:700;color:var(--green)">${fmtRp(totalMasuk)}</td>
+                  <td colspan="2"></td>
+                </tr>
+              </tbody>
+            </table>`
+        }
+      </div>
+
+      <!-- Signature -->
+      <div style="display:flex;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+        <div style="text-align:center">
+          <div style="height:48px;border-bottom:1px solid var(--text);width:160px;margin-bottom:6px"></div>
+          <div style="font-size:13px;font-weight:600">${c.pic}</div>
+          <div style="font-size:11px;color:var(--muted)">PIC SIAP Education</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">${nowStr}</div>
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">
+      <button class="btn btn-sm" onclick="printReport()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Cetak / Simpan PDF
+      </button>
+    </div>
+  `;
+}
+
+function printReport() {
+  window.print();
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 (async()=>{
   checkConfig();
   await load();
   renderDashboard();
+  populateDocDropdowns();
 })();
 </script>
 </body>
