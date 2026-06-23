@@ -1121,20 +1121,26 @@ function statusLabel(s){
 }
 
 // ── NAVIGATION ──────────────────────────────────────────────
-const pageTitles={
-  dashboard:['Dashboard','Ringkasan program mentoring SIAP Education'],
-  clients:['Semua Klien','Daftar dan status klien aktif'],
-  detail:['Detail Klien','Profil, task, sesi, evaluasi, dan pembayaran'],
-  jadwal:['Jadwal Sesi','Semua jadwal pertemuan mentoring'],
-  payment:['Pembayaran','Status pembayaran semua klien'],
-};
 function showPage(name,klienId){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
-  const navMap={dashboard:0,clients:1,jadwal:2,payment:3};
-  if(navMap[name]!==undefined) document.querySelectorAll('.nav-item')[navMap[name]].classList.add('active');
-  const t=pageTitles[name]||[name,''];
+  // navMap: 0=dashboard,1=clients,2=jadwal,3=payment,4=invoice,5=report
+  const navMap={dashboard:0,clients:1,jadwal:2,payment:3,invoice:4,report:5};
+  if(navMap[name]!==undefined){
+    const items=document.querySelectorAll('.nav-item');
+    if(items[navMap[name]]) items[navMap[name]].classList.add('active');
+  }
+  const allTitles={
+    dashboard:['Dashboard','Ringkasan program mentoring SIAP Education'],
+    clients:['Semua Klien','Daftar dan status klien aktif'],
+    detail:['Detail Klien','Profil, task, sesi, evaluasi, dan pembayaran'],
+    jadwal:['Jadwal Sesi','Semua jadwal pertemuan mentoring'],
+    payment:['Pembayaran','Status pembayaran semua klien'],
+    invoice:['Invoice','Buat dan cetak invoice tagihan klien'],
+    report:['Report Mentoring','Laporan progress dan evaluasi per klien'],
+  };
+  const t=allTitles[name]||[name,''];
   document.getElementById('page-title').textContent=t[0];
   document.getElementById('page-sub').textContent=t[1];
   if(name==='dashboard') renderDashboard();
@@ -1142,6 +1148,20 @@ function showPage(name,klienId){
   else if(name==='detail'&&klienId){currentClient=klienId;renderDetail(klienId);}
   else if(name==='jadwal') renderJadwal();
   else if(name==='payment') renderPayment();
+  else if(name==='invoice'){
+    populateDocDropdowns();
+    document.getElementById('inv-options').style.display='none';
+    document.getElementById('inv-preview-area').innerHTML='';
+  }
+  else if(name==='report'){
+    populateDocDropdowns();
+    if(klienId){
+      document.getElementById('rep-klien-select').value=klienId;
+      generateReport();
+    } else {
+      document.getElementById('rep-area').innerHTML='<div class="empty"><p>Pilih klien untuk melihat laporan.</p></div>';
+    }
+  }
 }
 function switchTab(i){
   document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
@@ -1703,38 +1723,6 @@ function populateDocDropdowns() {
   const opts = DB.clients.map(c => `<option value="${c.id}">${c.nama}</option>`).join('');
   sel1.innerHTML = '<option value="">-- Pilih Klien --</option>' + opts;
   sel2.innerHTML = '<option value="">-- Pilih Klien --</option>' + opts;
-}
-
-// ── PAGE: showPage extension ─────────────────────────────────
-const _origShowPage = showPage;
-function showPage(name, klienId) {
-  // Handle new pages manually before calling original
-  if (name === 'invoice' || name === 'report') {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('page-' + name).classList.add('active');
-    const navItems = document.querySelectorAll('.nav-item');
-    // Invoice is index 4, Report is index 5
-    if (name === 'invoice') navItems[4]?.classList.add('active');
-    if (name === 'report')  navItems[5]?.classList.add('active');
-    const titles = {
-      invoice: ['Invoice', 'Buat dan cetak invoice tagihan klien'],
-      report:  ['Report Mentoring', 'Laporan progress dan evaluasi per klien'],
-    };
-    document.getElementById('page-title').textContent = titles[name][0];
-    document.getElementById('page-sub').textContent   = titles[name][1];
-    populateDocDropdowns();
-    if (name === 'invoice') {
-      document.getElementById('inv-options').style.display = 'none';
-      document.getElementById('inv-preview-area').innerHTML = '';
-    }
-    if (name === 'report' && klienId) {
-      document.getElementById('rep-klien-select').value = klienId;
-      generateReport();
-    }
-    return;
-  }
-  _origShowPage(name, klienId);
 }
 
 // ── INVOICE ──────────────────────────────────────────────────
