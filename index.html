@@ -51,7 +51,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
 
 /* LOADING OVERLAY */
 .loading-overlay{position:fixed;inset:0;background:rgba(31,58,95,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
-.loading-overlay.hidden{display:none}
+.loading-overlay.hidden{display:none;pointer-events:none}
 .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
 .loading-overlay p{color:#fff;font-size:14px;opacity:.8}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -269,7 +269,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
 <body>
 
 <!-- Loading Overlay -->
-<div class="loading-overlay" id="loading-overlay">
+<div class="loading-overlay hidden" id="loading-overlay">
   <div class="loading-spinner"></div>
   <p id="loading-msg">Memuat data dari server...</p>
 </div>
@@ -802,9 +802,22 @@ function setSyncStatus(status, msg) {
 // ── API HELPERS ─────────────────────────────────────────────
 async function apiLoad() {
   if (!API_URL) return null;
-  const res = await fetch(API_URL + '?action=load', { redirect: 'follow' });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  return await res.json();
+  // Timeout 8 detik — kalau GAS tidak merespons, jangan hang selamanya
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const res = await fetch(API_URL + '?action=load', {
+      redirect: 'follow',
+      signal: controller.signal
+    });
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return await res.json();
+  } catch(e) {
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Timeout — GAS tidak merespons dalam 8 detik');
+    throw e;
+  }
 }
 
 async function apiSave(data) {
@@ -828,8 +841,17 @@ async function apiSave(data) {
   // no-cors response selalu opaque — tidak bisa dibaca
   // Verifikasi dengan ping terpisah
   await new Promise(r => setTimeout(r, 1500)); // tunggu GAS selesai proses
-  const ping = await fetch(API_URL + '?action=ping');
-  if (!ping.ok) throw new Error('Save sent but ping failed');
+  const pingController = new AbortController();
+  const pingTimer = setTimeout(() => pingController.abort(), 5000);
+  try {
+    const ping = await fetch(API_URL + '?action=ping', { signal: pingController.signal });
+    clearTimeout(pingTimer);
+    if (!ping.ok) throw new Error('Save sent but ping failed');
+  } catch(e) {
+    clearTimeout(pingTimer);
+    // Ping gagal/timeout bukan berarti save gagal — save no-cors tidak bisa dikonfirmasi
+    // Anggap berhasil, biarkan load berikutnya yang verifikasi
+  }
   return { ok: true };
 }
 
@@ -875,7 +897,19 @@ async function manualSync() {
 // ── LOAD DATA ────────────────────────────────────────────────
 async function load() {
   showLoading('Memuat data dari Google Sheets...');
+  try {
+    await _loadData();
+  } catch(e) {
+    // Safety net — pastikan overlay selalu hilang
+    console.error('load() uncaught:', e);
+    try { seedData(); } catch(_) {}
+    setSyncStatus('error', 'Error tidak terduga: ' + e.message);
+  } finally {
+    hideLoading(); // SELALU dipanggil, apapun yang terjadi
+  }
+}
 
+async function _loadData() {
   // Coba dari Google Sheets dulu
   if (API_URL) {
     try {
@@ -884,56 +918,49 @@ async function load() {
         DB = result.data;
         if (!DB.clients) DB.clients = [];
         if (!DB.jadwal)  DB.jadwal  = [];
-        // Kalau sheet masih kosong, isi dengan seed data
         if (DB.clients.length === 0) {
-          // Sheet kosong — cek apakah ada data lokal yang bisa di-push
+          // Sheet kosong — cek cache lokal
           const cached = localStorage.getItem(LS_KEY_DATA);
           if (cached) {
             try {
               const localDB = JSON.parse(cached);
               if (localDB.clients && localDB.clients.length > 0) {
-                // Ada data lokal — push ke Sheets sekarang
                 DB = localDB;
                 setSyncStatus('syncing', 'Mengupload data lokal ke Sheets...');
                 await pushToSheets();
                 setSyncStatus('synced', 'Data lokal berhasil diupload · ' + new Date().toLocaleTimeString('id-ID'));
-                hideLoading();
                 return;
               }
             } catch(e) {}
           }
-          // Betul-betul kosong — seed dengan data demo
           seedData();
           await pushToSheets();
         } else {
-          // Ada data di Sheets — update cache lokal
           try { localStorage.setItem(LS_KEY_DATA, JSON.stringify(DB)); } catch(e) {}
         }
         setSyncStatus('synced', 'Terhubung · ' + new Date().toLocaleTimeString('id-ID'));
-        hideLoading();
         return;
       }
     } catch (err) {
-      setSyncStatus('error', 'Gagal terhubung, pakai data lokal');
+      setSyncStatus('error', 'GAS: ' + err.message + ' — pakai cache lokal');
     }
   }
 
-  // Fallback: pakai cache lokal
+  // Fallback: cache lokal
   try {
     const cached = localStorage.getItem(LS_KEY_DATA);
     if (cached) {
       DB = JSON.parse(cached);
       if (!DB.clients) DB.clients = [];
       if (!DB.jadwal)  DB.jadwal  = [];
-      setSyncStatus('error', API_URL ? 'Mode offline (cache)' : 'API URL belum diset');
+      setSyncStatus('error', API_URL ? 'Offline (cache lokal)' : 'API URL belum diset — data demo');
     } else {
       seedData();
+      setSyncStatus('error', 'Tidak ada cache — data demo ditampilkan');
     }
   } catch(e) {
     seedData();
   }
-
-  hideLoading();
 }
 
 function showLoading(msg) {
