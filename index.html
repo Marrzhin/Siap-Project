@@ -822,37 +822,27 @@ async function apiLoad() {
 
 async function apiSave(data) {
   if (!API_URL) return null;
-  // Gunakan POST dengan mode 'no-cors' + URLSearchParams
-  // Alasan:
-  //   - fetch POST biasa ke GAS → GAS redirect → browser blokir (CORS error)
-  //   - GET dengan payload besar → melebihi limit URL browser (~8KB)
-  //   - no-cors POST + URLSearchParams → tidak ada preflight, GAS terima via e.parameter
-  //   - Trade-off: response tidak bisa dibaca (opaque), tapi save berhasil
-  //   - Verifikasi dilakukan via ping GET setelah save
-  const body = new URLSearchParams({
-    action: 'save',
-    payload: JSON.stringify(data)
-  });
-  await fetch(API_URL, {
-    method: 'POST',
-    mode: 'no-cors',
-    body: body
-  });
-  // no-cors response selalu opaque — tidak bisa dibaca
-  // Verifikasi dengan ping terpisah
-  await new Promise(r => setTimeout(r, 1500)); // tunggu GAS selesai proses
-  const pingController = new AbortController();
-  const pingTimer = setTimeout(() => pingController.abort(), 5000);
+  // Kirim via GET dengan payload JSON di URL parameter
+  // Strategi ini konsisten dengan doGet di Apps Script
+  // Trade-off: URL panjang tapi GAS mendukung hingga ~100KB parameter
+  const payload = encodeURIComponent(JSON.stringify(data));
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000); // save boleh lebih lama
   try {
-    const ping = await fetch(API_URL + '?action=ping', { signal: pingController.signal });
-    clearTimeout(pingTimer);
-    if (!ping.ok) throw new Error('Save sent but ping failed');
+    const res = await fetch(
+      API_URL + '?action=save&payload=' + payload,
+      { redirect: 'follow', signal: controller.signal }
+    );
+    clearTimeout(timer);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const result = await res.json();
+    if (!result.ok) throw new Error(result.error || 'GAS returned error');
+    return result;
   } catch(e) {
-    clearTimeout(pingTimer);
-    // Ping gagal/timeout bukan berarti save gagal — save no-cors tidak bisa dikonfirmasi
-    // Anggap berhasil, biarkan load berikutnya yang verifikasi
+    clearTimeout(timer);
+    if (e.name === 'AbortError') throw new Error('Timeout — GAS tidak merespons dalam 15 detik');
+    throw e;
   }
-  return { ok: true };
 }
 
 // ── SAVE + DEBOUNCED SYNC ───────────────────────────────────
@@ -879,14 +869,15 @@ async function pushToSheets() {
     setSyncStatus('syncing', 'Menyimpan ke Google Sheets...');
     const result = await apiSave(DB);
     if (result && result.ok) {
-      setSyncStatus('synced', 'Tersimpan · ' + new Date().toLocaleTimeString('id-ID'));
+      const info = result.saved ? ` (${result.saved.clients} klien, ${result.saved.jadwal} jadwal)` : '';
+      setSyncStatus('synced', 'Tersimpan' + info + ' · ' + new Date().toLocaleTimeString('id-ID'));
       pendingSync = false;
     } else {
-      throw new Error(result?.error || 'Unknown error');
+      throw new Error(result?.error || 'GAS tidak merespons dengan benar');
     }
   } catch (err) {
     setSyncStatus('error', 'Gagal sync: ' + err.message);
-    showNotif('Gagal sync ke server. Data tersimpan lokal.', 'error');
+    showNotif('Gagal sync: ' + err.message, 'error');
   }
 }
 
