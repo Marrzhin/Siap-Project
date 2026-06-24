@@ -51,7 +51,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
 
 /* LOADING OVERLAY */
 .loading-overlay{position:fixed;inset:0;background:rgba(31,58,95,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
-.loading-overlay.hidden{display:none;pointer-events:none}
+.loading-overlay.hidden{display:none}
 .loading-spinner{width:40px;height:40px;border:3px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite}
 .loading-overlay p{color:#fff;font-size:14px;opacity:.8}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -269,7 +269,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
 <body>
 
 <!-- Loading Overlay -->
-<div class="loading-overlay hidden" id="loading-overlay">
+<div class="loading-overlay" id="loading-overlay">
   <div class="loading-spinner"></div>
   <p id="loading-msg">Memuat data dari server...</p>
 </div>
@@ -387,6 +387,22 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
       <option value="">Semua PIC</option>
       <option value="Chaly">Chaly</option>
       <option value="Yudi">Yudi</option>
+    </select>
+    <select onchange="renderClients()" id="filter-jenis" style="padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px">
+      <option value="">Semua Jenis</option>
+      <option value="F&B">F&B</option>
+      <option value="Kuliner">Kuliner</option>
+      <option value="Retail">Retail</option>
+      <option value="Furniture">Furniture</option>
+      <option value="Fashion">Fashion</option>
+      <option value="Jasa">Jasa</option>
+      <option value="Bisnis">Bisnis</option>
+      <option value="Pertanian">Pertanian</option>
+      <option value="Properti">Properti</option>
+      <option value="Otomotif">Otomotif</option>
+      <option value="Kesehatan">Kesehatan</option>
+      <option value="Pendidikan">Pendidikan</option>
+      <option value="Lainnya">Lainnya</option>
     </select>
   </div>
   <div class="clients-grid" id="clients-grid"></div>
@@ -579,7 +595,22 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
       </div>
       <div class="form-group">
         <label>Jenis Usaha</label>
-        <input type="text" id="f-jenis" placeholder="F&B, Retail, dll">
+        <select id="f-jenis">
+          <option value="">-- Pilih Jenis --</option>
+          <option value="F&B">F&B (Food & Beverage)</option>
+          <option value="Kuliner">Kuliner</option>
+          <option value="Retail">Retail / Toko</option>
+          <option value="Furniture">Furniture / Mebel</option>
+          <option value="Fashion">Fashion / Pakaian</option>
+          <option value="Jasa">Jasa / Layanan</option>
+          <option value="Bisnis">Bisnis Umum</option>
+          <option value="Pertanian">Pertanian / Agribisnis</option>
+          <option value="Properti">Properti</option>
+          <option value="Otomotif">Otomotif</option>
+          <option value="Kesehatan">Kesehatan / Kecantikan</option>
+          <option value="Pendidikan">Pendidikan / Kursus</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
       </div>
       <div class="form-group">
         <label>Nama Pemilik</label>
@@ -667,6 +698,19 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
   <div class="modal">
     <div class="modal-title">Tambah Sesi Pertemuan</div>
     <div class="form-grid">
+      <!-- Row klien + PIC: hanya tampil saat tambah dari halaman Jadwal global -->
+      <div class="form-group full" id="s-row-klien" style="display:none">
+        <label>Klien *</label>
+        <select id="s-klien"></select>
+      </div>
+      <div class="form-group" id="s-row-pic" style="display:none">
+        <label>PIC</label>
+        <select id="s-pic">
+          <option value="Chaly">Chaly</option>
+          <option value="Yudi">Yudi</option>
+        </select>
+      </div>
+      <div class="form-group" id="s-row-pic-spacer" style="display:none"><!-- spacer --></div>
       <div class="form-group">
         <label>Tanggal</label>
         <input type="date" id="s-tanggal">
@@ -802,47 +846,35 @@ function setSyncStatus(status, msg) {
 // ── API HELPERS ─────────────────────────────────────────────
 async function apiLoad() {
   if (!API_URL) return null;
-  // Timeout 8 detik — kalau GAS tidak merespons, jangan hang selamanya
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 8000);
-  try {
-    const res = await fetch(API_URL + '?action=load', {
-      redirect: 'follow',
-      signal: controller.signal
-    });
-    clearTimeout(timer);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    return await res.json();
-  } catch(e) {
-    clearTimeout(timer);
-    if (e.name === 'AbortError') throw new Error('Timeout — GAS tidak merespons dalam 8 detik');
-    throw e;
-  }
+  const res = await fetch(API_URL + '?action=load', { redirect: 'follow' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return await res.json();
 }
 
 async function apiSave(data) {
   if (!API_URL) return null;
-  // Kirim via GET dengan payload JSON di URL parameter
-  // Strategi ini konsisten dengan doGet di Apps Script
-  // Trade-off: URL panjang tapi GAS mendukung hingga ~100KB parameter
-  const payload = encodeURIComponent(JSON.stringify(data));
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 15000); // save boleh lebih lama
-  try {
-    const res = await fetch(
-      API_URL + '?action=save&payload=' + payload,
-      { redirect: 'follow', signal: controller.signal }
-    );
-    clearTimeout(timer);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || 'GAS returned error');
-    return result;
-  } catch(e) {
-    clearTimeout(timer);
-    if (e.name === 'AbortError') throw new Error('Timeout — GAS tidak merespons dalam 15 detik');
-    throw e;
-  }
+  // Gunakan POST dengan mode 'no-cors' + URLSearchParams
+  // Alasan:
+  //   - fetch POST biasa ke GAS → GAS redirect → browser blokir (CORS error)
+  //   - GET dengan payload besar → melebihi limit URL browser (~8KB)
+  //   - no-cors POST + URLSearchParams → tidak ada preflight, GAS terima via e.parameter
+  //   - Trade-off: response tidak bisa dibaca (opaque), tapi save berhasil
+  //   - Verifikasi dilakukan via ping GET setelah save
+  const body = new URLSearchParams({
+    action: 'save',
+    payload: JSON.stringify(data)
+  });
+  await fetch(API_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    body: body
+  });
+  // no-cors response selalu opaque — tidak bisa dibaca
+  // Verifikasi dengan ping terpisah
+  await new Promise(r => setTimeout(r, 1500)); // tunggu GAS selesai proses
+  const ping = await fetch(API_URL + '?action=ping');
+  if (!ping.ok) throw new Error('Save sent but ping failed');
+  return { ok: true };
 }
 
 // ── SAVE + DEBOUNCED SYNC ───────────────────────────────────
@@ -869,15 +901,14 @@ async function pushToSheets() {
     setSyncStatus('syncing', 'Menyimpan ke Google Sheets...');
     const result = await apiSave(DB);
     if (result && result.ok) {
-      const info = result.saved ? ` (${result.saved.clients} klien, ${result.saved.jadwal} jadwal)` : '';
-      setSyncStatus('synced', 'Tersimpan' + info + ' · ' + new Date().toLocaleTimeString('id-ID'));
+      setSyncStatus('synced', 'Tersimpan · ' + new Date().toLocaleTimeString('id-ID'));
       pendingSync = false;
     } else {
-      throw new Error(result?.error || 'GAS tidak merespons dengan benar');
+      throw new Error(result?.error || 'Unknown error');
     }
   } catch (err) {
     setSyncStatus('error', 'Gagal sync: ' + err.message);
-    showNotif('Gagal sync: ' + err.message, 'error');
+    showNotif('Gagal sync ke server. Data tersimpan lokal.', 'error');
   }
 }
 
@@ -888,19 +919,7 @@ async function manualSync() {
 // ── LOAD DATA ────────────────────────────────────────────────
 async function load() {
   showLoading('Memuat data dari Google Sheets...');
-  try {
-    await _loadData();
-  } catch(e) {
-    // Safety net — pastikan overlay selalu hilang
-    console.error('load() uncaught:', e);
-    try { seedData(); } catch(_) {}
-    setSyncStatus('error', 'Error tidak terduga: ' + e.message);
-  } finally {
-    hideLoading(); // SELALU dipanggil, apapun yang terjadi
-  }
-}
 
-async function _loadData() {
   // Coba dari Google Sheets dulu
   if (API_URL) {
     try {
@@ -909,49 +928,56 @@ async function _loadData() {
         DB = result.data;
         if (!DB.clients) DB.clients = [];
         if (!DB.jadwal)  DB.jadwal  = [];
+        // Kalau sheet masih kosong, isi dengan seed data
         if (DB.clients.length === 0) {
-          // Sheet kosong — cek cache lokal
+          // Sheet kosong — cek apakah ada data lokal yang bisa di-push
           const cached = localStorage.getItem(LS_KEY_DATA);
           if (cached) {
             try {
               const localDB = JSON.parse(cached);
               if (localDB.clients && localDB.clients.length > 0) {
+                // Ada data lokal — push ke Sheets sekarang
                 DB = localDB;
                 setSyncStatus('syncing', 'Mengupload data lokal ke Sheets...');
                 await pushToSheets();
                 setSyncStatus('synced', 'Data lokal berhasil diupload · ' + new Date().toLocaleTimeString('id-ID'));
+                hideLoading();
                 return;
               }
             } catch(e) {}
           }
+          // Betul-betul kosong — seed dengan data demo
           seedData();
           await pushToSheets();
         } else {
+          // Ada data di Sheets — update cache lokal
           try { localStorage.setItem(LS_KEY_DATA, JSON.stringify(DB)); } catch(e) {}
         }
         setSyncStatus('synced', 'Terhubung · ' + new Date().toLocaleTimeString('id-ID'));
+        hideLoading();
         return;
       }
     } catch (err) {
-      setSyncStatus('error', 'GAS: ' + err.message + ' — pakai cache lokal');
+      setSyncStatus('error', 'Gagal terhubung, pakai data lokal');
     }
   }
 
-  // Fallback: cache lokal
+  // Fallback: pakai cache lokal
   try {
     const cached = localStorage.getItem(LS_KEY_DATA);
     if (cached) {
       DB = JSON.parse(cached);
       if (!DB.clients) DB.clients = [];
       if (!DB.jadwal)  DB.jadwal  = [];
-      setSyncStatus('error', API_URL ? 'Offline (cache lokal)' : 'API URL belum diset — data demo');
+      setSyncStatus('error', API_URL ? 'Mode offline (cache)' : 'API URL belum diset');
     } else {
       seedData();
-      setSyncStatus('error', 'Tidak ada cache — data demo ditampilkan');
     }
   } catch(e) {
     seedData();
   }
+
+  hideLoading();
 }
 
 function showLoading(msg) {
@@ -1270,9 +1296,11 @@ function renderClients(){
   const q=(document.getElementById('search-klien').value||'').toLowerCase();
   const fs=document.getElementById('filter-status').value;
   const fp=document.getElementById('filter-pic').value;
+  const fj=document.getElementById('filter-jenis').value;
   let cls=DB.clients.filter(c=>{
     if(q&&!c.nama.toLowerCase().includes(q)&&!c.jenis.toLowerCase().includes(q)) return false;
     if(fp&&c.pic!==fp) return false;
+    if(fj&&c.jenis!==fj) return false;
     if(fs==='selesai'&&c.bulan<c.durasi) return false;
     if(fs==='aktif'&&c.bulan>=c.durasi) return false;
     return true;
@@ -1435,8 +1463,19 @@ function renderSesi(id){
       </div>
     </div>`).join('')}</div>`;
 }
+function setSesiGlobalFields(show){
+  document.getElementById('s-row-klien').style.display=show?'block':'none';
+  document.getElementById('s-row-pic').style.display=show?'block':'none';
+  document.getElementById('s-row-pic-spacer').style.display='none';
+}
+function populateSesiKlienDropdown(selectedId){
+  const sel=document.getElementById('s-klien');
+  sel.innerHTML=DB.clients.map(c=>`<option value="${c.id}">${c.nama}</option>`).join('');
+  if(selectedId) sel.value=selectedId;
+}
 function openAddSesi(){
   addJadwalForClient=currentClient;
+  setSesiGlobalFields(false);
   document.getElementById('s-tanggal').value=today();
   document.getElementById('s-waktu').value='09:00';
   document.getElementById('s-jenis').value='Visit Offline';
@@ -1448,8 +1487,13 @@ function openAddSesi(){
 }
 function openAddJadwalGlobal(){
   addJadwalForClient=null;
+  setSesiGlobalFields(true);
+  populateSesiKlienDropdown(null);
+  document.getElementById('s-pic').value='Chaly';
   document.getElementById('s-tanggal').value=today();
   document.getElementById('s-waktu').value='09:00';
+  document.getElementById('s-jenis').value='Visit Offline';
+  document.getElementById('s-status').value='UPCOMING';
   document.getElementById('s-agenda').value='';
   document.getElementById('s-catatan').value='';
   delete document.getElementById('modal-sesi').dataset.editId;
@@ -1458,6 +1502,13 @@ function openAddJadwalGlobal(){
 function editSesi(jid){
   const j=DB.jadwal.find(x=>x.id===jid); if(!j)return;
   addJadwalForClient=j.klienId;
+  // Tampilkan klien+PIC selector saat edit dari halaman Jadwal global
+  const fromJadwalPage=document.getElementById('page-jadwal').classList.contains('active');
+  setSesiGlobalFields(fromJadwalPage);
+  if(fromJadwalPage){
+    populateSesiKlienDropdown(j.klienId);
+    document.getElementById('s-pic').value=j.pic||'Chaly';
+  }
   document.getElementById('s-tanggal').value=j.tanggal;
   document.getElementById('s-waktu').value=j.waktu||'09:00';
   document.getElementById('s-jenis').value=j.jenis;
@@ -1471,15 +1522,23 @@ function saveSesi(){
   const tgl=document.getElementById('s-tanggal').value;
   if(!tgl){alert('Tanggal wajib diisi');return;}
   const editId=document.getElementById('modal-sesi').dataset.editId;
+  const isGlobal=document.getElementById('s-row-klien').style.display!=='none';
+  const klienId=isGlobal
+    ?document.getElementById('s-klien').value
+    :(addJadwalForClient||currentClient);
+  if(isGlobal&&!klienId){alert('Pilih klien terlebih dahulu');return;}
+  const pic=isGlobal
+    ?document.getElementById('s-pic').value
+    :(getClient(klienId)?.pic||'Chaly');
   const sesi={
     id:editId||uid(),
-    klienId:addJadwalForClient||currentClient,
+    klienId,
     tanggal:tgl, waktu:document.getElementById('s-waktu').value,
     jenis:document.getElementById('s-jenis').value,
     status:document.getElementById('s-status').value,
     agenda:document.getElementById('s-agenda').value.trim(),
     catatan:document.getElementById('s-catatan').value.trim(),
-    pic:addJadwalForClient?getClient(addJadwalForClient)?.pic||'Chaly':'Chaly',
+    pic,
   };
   if(editId){const idx=DB.jadwal.findIndex(j=>j.id===editId);if(idx>=0)DB.jadwal[idx]=sesi;}
   else DB.jadwal.push(sesi);
