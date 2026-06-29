@@ -830,7 +830,8 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#F0F2F5;color:var(--text
 const LS_KEY_URL  = 'siap_crm_api_url';
 const LS_KEY_DATA = 'siap_crm_v4_cache'; // cache lokal sementara
 
-let API_URL = localStorage.getItem(LS_KEY_URL) || '';
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbwzZ2TL03Ja2hw9VSUI9_R0vJB2FLHr2h3vTid83OFbjYvrR2s9k5DN8aX8H4bfcq0M/exec';
+let API_URL = localStorage.getItem(LS_KEY_URL) || DEFAULT_API_URL;
 
 // ── SYNC STATE ──────────────────────────────────────────────
 const syncDot   = document.getElementById('sync-dot');
@@ -1826,7 +1827,7 @@ function onInvKlienChange() {
   sel.innerHTML = Array.from({length: c.durasi || 6}, (_, i) =>
     `<option value="${i+1}" ${i+1 === c.bulan ? 'selected' : ''}>Bulan ${i+1}</option>`
   ).join('');
-  document.getElementById('inv-catatan').value = 'Mohon transfer ke rekening yang tertera. Terima kasih atas kepercayaan Anda kepada SIAP Education.';
+  document.getElementById('inv-catatan').value = 'Mohon lakukan pembayaran sesuai nominal di atas ke rekening yang tertera. Terima kasih atas kepercayaan Anda kepada SIAP Education.';
 }
 
 function generateInvoice() {
@@ -1951,8 +1952,21 @@ function previewInvoice() {
           </div>
         </div>
 
+        <!-- Informasi Rekening — selalu tampil -->
+        <div style="margin-top:20px;padding:14px 18px;background:#E8EDF4;border-radius:8px;border-left:4px solid var(--navy)">
+          <div style="font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Informasi Rekening Pembayaran</div>
+          <div style="display:grid;grid-template-columns:110px 1fr;gap:5px 0;font-size:13px;align-items:center">
+            <span style="color:var(--muted);font-size:12px">Bank</span>
+            <span style="font-weight:700;color:var(--navy)">Bank Raya</span>
+            <span style="color:var(--muted);font-size:12px">No. Rekening</span>
+            <span style="font-weight:700;font-size:16px;color:var(--navy);letter-spacing:.04em">001001874045314</span>
+            <span style="color:var(--muted);font-size:12px">Atas Nama</span>
+            <span style="font-weight:600">Prayudhi Fadhillah</span>
+          </div>
+        </div>
+
         ${catatan ? `
-        <div style="margin-top:20px;padding:12px 16px;background:var(--grey);border-radius:8px;border-left:3px solid var(--gold)">
+        <div style="margin-top:12px;padding:12px 16px;background:var(--grey);border-radius:8px;border-left:3px solid var(--gold)">
           <div style="font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px">CATATAN</div>
           <div style="font-size:13px">${catatan}</div>
         </div>` : ''}
